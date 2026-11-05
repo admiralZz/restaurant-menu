@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kedai Putri Menu</title>
+<meta name="theme-color" content="#a81d26">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf5ec;
+    --surface: #ffffff;
+    --ink: #2b1a16;
+    --muted: #85716a;
+    --line: #eadfd3;
+    --brand: #a81d26;
+    --brand-ink: #ffffff;
+    --gold: #f2b01e;
+    --gold-ink: #3a2500;
+    --chip: #f3e8db;
+    --shadow: 0 1px 2px rgba(60, 20, 10, .06), 0 4px 14px rgba(60, 20, 10, .06);
+    --script: 'Lobster', 'Nunito', system-ui, sans-serif;
+    --sans: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16100e; --surface: #221917; --ink: #f5ebe5; --muted: #b29f97;
+      --line: #3a2c28; --brand: #d8414a; --chip: #2e2320;
+      --shadow: 0 1px 2px rgba(0,0,0,.3);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16100e; --surface: #221917; --ink: #f5ebe5; --muted: #b29f97;
+    --line: #3a2c28; --brand: #d8414a; --chip: #2e2320;
+    --shadow: 0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.4 var(--sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+  img { display: block; max-width: 100%; }
+  button { font: inherit; color: inherit; }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: var(--brand); color: var(--brand-ink);
+    padding: 20px 16px 22px; position: relative; overflow: hidden;
+  }
+  .hero::after { /* gold brushstroke like the printed menu */
+    content: ""; position: absolute; right: -60px; top: -40px; width: 200px; height: 200px;
+    border-radius: 50%; background: var(--gold); opacity: .18;
+  }
+  .hero .wrap { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+  .logo { width: 64px; height: 64px; border-radius: 50%; background: #fff; flex: none;
+          box-shadow: 0 0 0 3px var(--gold); }
+  .brand { min-width: 0; }
+  .brand h1 { margin: 0; font: 400 32px/1.05 var(--script); letter-spacing: .3px; }
+  .brand p { margin: 4px 0 0; font-size: 14px; opacity: .85; }
+
+  /* ---------- Sticky bar: language + categories ---------- */
+  .bar {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .langs { display: flex; gap: 6px; padding: 10px 16px 0; }
+  .langs button {
+    flex: 1; border: 1.5px solid var(--line); background: var(--surface);
+    border-radius: 999px; padding: 7px 0; font-weight: 700; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .langs button[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .langs .flag { font-size: 16px; line-height: 1; }
+
+  .chips {
+    display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px 10px;
+    scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 16px;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips, .strip { position: relative; } /* offsetLeft of children is measured from here */
+  .chips { /* fade at the edges hints that the row scrolls */
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 36px), transparent);
+            mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 36px), transparent);
+  }
+  /* Desktop / mouse: free scrolling (snap fights the wheel), drag cursor */
+  @media (hover: hover) and (pointer: fine) {
+    .chips, .strip { scroll-snap-type: none; cursor: grab; }
+    .chips.dragging, .strip.dragging { cursor: grabbing; user-select: none; }
+    .chips.dragging a, .strip.dragging .card { pointer-events: none; }
+  }
+  .chips a {
+    flex: none; scroll-snap-align: start; text-decoration: none; color: var(--ink);
+    background: var(--chip); border-radius: 999px; padding: 6px 13px;
+    font-size: 14px; font-weight: 700; white-space: nowrap;
+  }
+  .chips a.active { background: var(--ink); color: var(--bg); }
+  .chips .sep { flex: none; width: 1px; background: var(--line); margin: 4px 2px; }
+
+  /* ---------- Content ---------- */
+  main { padding: 0 16px 24px; }
+  .note { color: var(--muted); font-size: 13px; margin: 14px 0 0; text-align: center; }
+
+  .popular h2, .group-title { font: 400 26px/1.2 var(--script); color: var(--brand); margin: 22px 0 10px; }
+  :lang(zh) .popular h2, :lang(zh) .group-title, :lang(zh) .cat h3 { font-family: var(--sans); font-weight: 800; }
+  .strip {
+    display: flex; gap: 12px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 8px;
+    scroll-snap-type: x mandatory; scrollbar-width: none; scroll-padding-inline: 16px;
+  }
+  .strip::-webkit-scrollbar { display: none; }
+  .card {
+    flex: none; width: 148px; scroll-snap-align: start; background: var(--surface);
+    border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); border: 0; padding: 0;
+    text-align: left; cursor: pointer;
+  }
+  .card img { width: 148px; height: 148px; object-fit: cover; }
+  .card .t { padding: 8px 10px 10px; }
+  .card .nm { font-weight: 700; font-size: 14px; line-height: 1.25;
+              display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em; }
+  .card .pr { color: var(--brand); font-weight: 800; margin-top: 4px; }
+
+  .group-title { font-size: 30px; margin-top: 30px; padding-top: 6px; border-top: 2px dashed var(--line); }
+
+  .cat { scroll-margin-top: 112px; margin-top: 18px; }
+  .cat h3 {
+    font: 400 24px/1.2 var(--script); margin: 0 0 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .badge {
+    font: 800 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .6px;
+    background: var(--gold); color: var(--gold-ink); padding: 5px 8px; border-radius: 6px; white-space: nowrap;
+  }
+  .badge.fav { background: var(--brand); color: var(--brand-ink); }
+
+  .list { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); }
+  .item:first-child { border-top: 0; }
+  .item .ph { flex: none; width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 0; padding: 0; cursor: zoom-in; background: var(--chip); }
+  .item .ph img { width: 100%; height: 100%; object-fit: cover; }
+  .item .txt { flex: 1; min-width: 0; }
+  .item .nm { font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+  .item .orig { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .item .desc { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .item .tags { margin-top: 5px; }
+  .item .tags .badge { font-size: 10px; padding: 4px 6px; }
+  .item .pr { flex: none; font-weight: 800; color: var(--brand); font-size: 17px; font-variant-numeric: tabular-nums; }
+  .item .pr small { font-size: 12px; font-weight: 700; }
+  .guess { outline: 2px dashed var(--gold); outline-offset: -2px; }
+
+  /* ---------- Footer ---------- */
+  footer { background: var(--surface); border-top: 1px solid var(--line); padding: 22px 16px calc(28px + env(safe-area-inset-bottom)); margin-top: 28px; }
+  footer h4 { font: 400 22px/1.2 var(--script); color: var(--brand); margin: 0 0 10px; }
+  :lang(zh) footer h4 { font-family: var(--sans); font-weight: 800; }
+  footer p { margin: 6px 0; color: var(--muted); font-size: 14px; }
+  .wa {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 8px;
+    background: #1fa855; color: #fff; text-decoration: none; font-weight: 800;
+    padding: 10px 16px; border-radius: 999px;
+  }
+
+  /* ---------- Photo viewer ---------- */
+  dialog {
+    border: 0; padding: 0; border-radius: 20px; width: min(92vw, 420px);
+    background: var(--surface); color: var(--ink); overflow: hidden;
+  }
+  dialog::backdrop { background: rgba(10, 5, 4, .7); }
+  dialog img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  dialog .t { padding: 14px 16px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  dialog .t > div { flex: 1; }
+  dialog .nm { font-weight: 800; font-size: 18px; line-height: 1.25; }
+  dialog .orig { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  dialog .pr { color: var(--brand); font-weight: 800; font-size: 20px; }
+  dialog .x {
+    position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%;
+    border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 20px; line-height: 1; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="logo" src="img/logo.png" alt="" width="64" height="64">
+    <div class="brand">
+      <h1>Kedai Putri</h1>
+      <p data-t="tagline"></p>
+    </div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="langs" role="group" aria-label="Language">
+      <button data-lang="id"><span class="flag">🇮🇩</span>ID</button>
+      <button data-lang="ru"><span class="flag">🇷🇺</span>RU</button>
+      <button data-lang="zh"><span class="flag">🇨🇳</span>中文</button>
+    </div>
+    <nav class="chips" id="chips"></nav>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="note" data-t="priceNote"></p>
+  <section class="popular">
+    <h2 data-t="popular"></h2>
+    <div class="strip" id="strip"></div>
+  </section>
+  <div id="menu"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h4 data-t="contacts"></h4>
+    <p>📍 Jl. Raya Kampus Unud, Br. Celagi Basur, Jimbaran, Kuta Selatan, Badung, Bali 80361</p>
+    <a class="wa" href="https://wa.me/6285953714433" target="_blank" rel="noopener">WhatsApp +62 859 5371 4433</a>
+  </div>
+</footer>
+
+<dialog id="viewer">
+  <button class="x" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="t"><div><div class="nm"></div><div class="orig"></div></div><div class="pr"></div></div>
+</dialog>
+
+<script src="menu.js"></script>
+<script>
+(function () {
+  const UI = {
+    tagline:   { id: 'Restoran · Jimbaran, Bali', ru: 'Ресторан · Джимбаран, Бали', zh: '餐厅 · 巴厘岛金巴兰' },
+    priceNote: { id: 'Harga dalam ribu Rupiah: 25k = Rp 25.000', ru: 'Цены в тысячах рупий: 25k = 25 000 Rp', zh: '价格单位：千印尼盾，25k = 25,000 印尼盾' },
+    popular:   { id: 'Menu Populer', ru: 'Популярное', zh: '人气菜品' },
+    food:      { id: 'Makanan', ru: 'Еда', zh: '餐食' },
+    drink:     { id: 'Minuman', ru: 'Напитки', zh: '饮品' },
+    best:      { id: 'Best Seller', ru: 'Хит', zh: '招牌' },
+    fav:       { id: 'Favorit', ru: 'Выбор гостей', zh: '人气' },
+    contacts:  { id: 'Kontak', ru: 'Контакты', zh: '联系方式' },
+  };
+  const LANGS = ['id', 'ru', 'zh'];
+  const IMG = (f) => 'img/dishes/' + f + '.jpg';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const price = (p) => p + '<small>k</small>';
+
+  // Язык: ?lang=ru в ссылке/QR → сохранённый выбор → язык телефона → индонезийский
+  function initialLang() {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (LANGS.includes(q)) return q;
+    try { const s = localStorage.getItem('menu-lang'); if (LANGS.includes(s)) return s; } catch (e) {}
+    const nav = (navigator.language || '').slice(0, 2).toLowerCase();
+    return LANGS.includes(nav) ? nav : 'id';
+  }
+  let lang = initialLang();
+
+  const $ = (s) => document.querySelector(s);
+  const all = [];
+  MENU.forEach((c) => c.items.forEach((it) => all.push(Object.assign({ cat: c }, it))));
+
+  function nameBlock(it) {
+    const main = it.n[lang] || it.n.id;
+    const orig = lang !== 'id' ? `<div class="orig">${esc(it.n.id)}</div>` : '';
+    return { main, orig };
+  }
+
+  function render() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = UI[el.dataset.t][lang]; });
+    document.querySelectorAll('.langs button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+
+    // Popular strip — all dishes with photos
+    $('#strip').innerHTML = all.filter((it) => it.img).map((it) => {
+      const i = all.indexOf(it);
+      return `<button class="card" data-i="${i}">
+        <img src="${IMG(it.img)}" alt="" loading="lazy" width="148" height="148">
+        <div class="t"><div class="nm">${esc(it.n[lang])}</div><div class="pr">${price(it.p)}</div></div>
+      </button>`;
+    }).join('');
+
+    // Chips + sections
+    let chips = '', html = '', group = null;
+    MENU.forEach((c) => {
+      if (c.group !== group) {
+        if (group) chips += '<span class="sep"></span>';
+        group = c.group;
+        html += `<h2 class="group-title" id="g-${group}">${esc(UI[group][lang])}</h2>`;
+      }
+      chips += `<a href="#c-${c.id}" data-id="${c.id}">${esc(c.name[lang])}</a>`;
+      const badge = c.tag ? `<span class="badge ${c.tag}">${esc(UI[c.tag][lang])}</span>` : '';
+      html += `<section class="cat" id="c-${c.id}"><h3>${esc(c.name[lang])}${badge}</h3><div class="list">`;
+      c.items.forEach((it) => {
+        const i = all.indexOf(all.find((a) => a.cat === c && a.n.id === it.n.id));
+        const nb = nameBlock(it);
+        const ph = it.img ? `<button class="ph" data-i="${i}" aria-label="Photo"><img src="${IMG(it.img)}" alt="" loading="lazy" width="64" height="64"></button>` : '';
+        const desc = it.d ? `<div class="desc">${esc(it.d[lang])}</div>` : '';
+        const tag = it.tag && it.tag !== c.tag ? `<div class="tags"><span class="badge ${it.tag}">${esc(UI[it.tag][lang])}</span></div>` : '';
+        html += `<div class="item${it.guess ? ' guess' : ''}"${it.guess ? ' title="TODO: verify name"' : ''}>
+          ${ph}
+          <div class="txt"><div class="nm">${esc(nb.main)}</div>${nb.orig}${desc}${tag}</div>
+          <div class="pr">${price(it.p)}</div>
+        </div>`;
+      });
+      html += '</div></section>';
+    });
+    $('#chips').innerHTML = chips;
+    $('#menu').innerHTML = html;
+    observe();
+  }
+
+  // Highlight the chip of the section currently on screen
+  let io;
+  function observe() {
+    if (io) io.disconnect();
+    const visible = new Map();
+    io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => visible.set(e.target.id, e.isIntersecting ? e.boundingClientRect.top : null));
+      const top = [...document.querySelectorAll('.cat')].find((s) => visible.get(s.id) != null);
+      if (top) setActive(top.id.slice(2));
+    }, { rootMargin: '-120px 0px -55% 0px' });
+    document.querySelectorAll('.cat').forEach((s) => io.observe(s));
+  }
+  let activeId = null;
+  function setActive(id) {
+    if (id === activeId) return;
+    activeId = id;
+    document.querySelectorAll('.chips a').forEach((a) => {
+      const on = a.dataset.id === id;
+      a.classList.toggle('active', on);
+      if (on) {
+        const bar = $('#chips');
+        bar.scrollTo({ left: a.offsetLeft - bar.clientWidth / 2 + a.clientWidth / 2, behavior: 'smooth' });
+      }
+    });
+  }
+
+  // Horizontal rows on desktop: mouse wheel scrolls sideways, and the row can be dragged
+  function hscroll(el) {
+    el.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; // trackpad sideways swipe works natively
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      const next = Math.max(0, Math.min(max, el.scrollLeft + e.deltaY));
+      if (next === el.scrollLeft) return; // at the end — let the page scroll
+      e.preventDefault();
+      el.scrollLeft = next;
+    }, { passive: false });
+
+    let startX = 0, startLeft = 0, down = false, moved = false;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = false; startX = e.clientX; startLeft = el.scrollLeft;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) > 5) { moved = true; el.classList.add('dragging'); }
+      if (moved) el.scrollLeft = startLeft - dx;
+    });
+    window.addEventListener('pointerup', () => {
+      if (!down) return;
+      down = false;
+      if (moved) setTimeout(() => el.classList.remove('dragging'), 0); // swallow the click after a drag
+    });
+  }
+  hscroll($('#chips'));
+  hscroll($('#strip'));
+
+  // Language switch
+  document.querySelector('.langs').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-lang]');
+    if (!b || b.dataset.lang === lang) return;
+    lang = b.dataset.lang;
+    try { localStorage.setItem('menu-lang', lang); } catch (err) {}
+    const u = new URL(location.href); u.searchParams.set('lang', lang);
+    history.replaceState(null, '', u);
+    activeId = null;
+    render();
+  });
+
+  // Photo viewer
+  const dlg = $('#viewer');
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-i]');
+    if (!b) return;
+    const it = all[+b.dataset.i];
+    const nb = nameBlock(it);
+    dlg.querySelector('img').src = IMG(it.img);
+    dlg.querySelector('.nm').textContent = nb.main;
+    dlg.querySelector('.orig').textContent = lang !== 'id' ? it.n.id : '';
+    dlg.querySelector('.pr').innerHTML = price(it.p);
+    dlg.showModal();
+  });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target.closest('.x')) dlg.close(); });
+
+  render();
+})();
+</script>
+</body>
+</html>
