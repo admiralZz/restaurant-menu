@@ -68,6 +68,13 @@
   .brand { min-width: 0; }
   .brand h1 { margin: 0; font: 400 32px/1.05 var(--script); letter-spacing: .3px; }
   .brand p { margin: 4px 0 0; font-size: 14px; opacity: .85; }
+  .brand h1 { white-space: nowrap; }
+  @media (max-width: 400px) {
+    .hero .wrap { gap: 11px; }
+    .logo { width: 52px; height: 52px; }
+    .brand h1 { font-size: 27px; }
+    .brand p { font-size: 13px; }
+  }
 
   /* ---------- Sticky bar: language + categories ---------- */
   .bar {
@@ -76,14 +83,23 @@
     backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px);
     border-bottom: 1px solid var(--line);
   }
-  .langs { display: flex; gap: 6px; padding: 10px 16px 0; }
-  .langs button {
-    flex: 1; border: 1.5px solid var(--line); background: var(--surface);
-    border-radius: 999px; padding: 7px 0; font-weight: 700; font-size: 14px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+  /* Language dropdown in the header: styled pill, native <select> on top of it (system picker on phones) */
+  .lang {
+    position: relative; flex: none; margin-left: auto; align-self: flex-start;
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(255, 255, 255, .16); color: var(--brand-ink);
+    border: 1.5px solid rgba(255, 255, 255, .45); border-radius: 999px;
+    padding: 6px 10px 6px 11px; font-weight: 800; font-size: 14px; line-height: 1.2;
   }
-  .langs button[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
-  .langs .flag { font-size: 16px; line-height: 1; }
+  .lang:hover { background: rgba(255, 255, 255, .24); }
+  .lang .flag { font-size: 16px; line-height: 1; }
+  .lang svg { width: 12px; height: 12px; flex: none; }
+  .lang select {
+    position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    font-size: 16px; /* keeps iOS from zooming in on focus */
+    appearance: none; border: 0;
+  }
+  .lang:focus-within { outline: 2px solid var(--gold); outline-offset: 2px; }
 
   .chips {
     display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px 10px;
@@ -133,7 +149,7 @@
 
   .group-title { font-size: 30px; margin-top: 30px; padding-top: 6px; border-top: 2px dashed var(--line); }
 
-  .cat { scroll-margin-top: 112px; margin-top: 18px; }
+  .cat { scroll-margin-top: 66px; margin-top: 18px; }
   .cat h3 {
     font: 400 24px/1.2 var(--script); margin: 0 0 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   }
@@ -195,16 +211,16 @@
       <h1>Kedai Putri</h1>
       <p data-t="tagline"></p>
     </div>
+    <label class="lang">
+      <span class="flag" id="langFlag"></span><span id="langCode"></span>
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <select id="langSel" aria-label="Language / Bahasa / Язык / 语言"></select>
+    </label>
   </div>
 </header>
 
 <div class="bar">
   <div class="wrap">
-    <div class="langs" role="group" aria-label="Language">
-      <button data-lang="id"><span class="flag">🇮🇩</span>ID</button>
-      <button data-lang="ru"><span class="flag">🇷🇺</span>RU</button>
-      <button data-lang="zh"><span class="flag">🇨🇳</span>中文</button>
-    </div>
     <nav class="chips" id="chips"></nav>
   </div>
 </div>
@@ -236,16 +252,23 @@
 <script>
 (function () {
   const UI = {
-    tagline:   { id: 'Restoran · Jimbaran, Bali', ru: 'Ресторан · Джимбаран, Бали', zh: '餐厅 · 巴厘岛金巴兰' },
-    priceNote: { id: 'Harga dalam ribu Rupiah: 25k = Rp 25.000', ru: 'Цены в тысячах рупий: 25k = 25 000 Rp', zh: '价格单位：千印尼盾，25k = 25,000 印尼盾' },
-    popular:   { id: 'Menu Populer', ru: 'Популярное', zh: '人气菜品' },
-    food:      { id: 'Makanan', ru: 'Еда', zh: '餐食' },
-    drink:     { id: 'Minuman', ru: 'Напитки', zh: '饮品' },
-    best:      { id: 'Best Seller', ru: 'Хит', zh: '招牌' },
-    fav:       { id: 'Favorit', ru: 'Выбор гостей', zh: '人气' },
-    contacts:  { id: 'Kontak', ru: 'Контакты', zh: '联系方式' },
+    tagline:   { id: 'Jimbaran, Bali', en: 'Jimbaran, Bali', ru: 'Джимбаран, Бали', zh: '巴厘岛 · 金巴兰' },
+    priceNote: { id: 'Harga dalam ribu Rupiah: 25k = Rp 25.000', en: 'Prices in thousands of Rupiah: 25k = Rp 25,000', ru: 'Цены в тысячах рупий: 25k = 25 000 Rp', zh: '价格单位：千印尼盾，25k = 25,000 印尼盾' },
+    popular:   { id: 'Menu Populer', en: 'Popular', ru: 'Популярное', zh: '人气菜品' },
+    food:      { id: 'Makanan', en: 'Food', ru: 'Еда', zh: '餐食' },
+    drink:     { id: 'Minuman', en: 'Drinks', ru: 'Напитки', zh: '饮品' },
+    best:      { id: 'Best Seller', en: 'Best Seller', ru: 'Хит', zh: '招牌' },
+    fav:       { id: 'Favorit', en: 'Favorite', ru: 'Выбор гостей', zh: '人气' },
+    contacts:  { id: 'Kontak', en: 'Contacts', ru: 'Контакты', zh: '联系方式' },
   };
-  const LANGS = ['id', 'ru', 'zh'];
+  // Порядок = порядок в выпадающем списке. Новый язык: добавить сюда + поле в menu.js и UI.
+  const LANG_INFO = {
+    id: { flag: '🇮🇩', code: 'ID', label: 'Bahasa Indonesia' },
+    en: { flag: '🇬🇧', code: 'EN', label: 'English' },
+    ru: { flag: '🇷🇺', code: 'RU', label: 'Русский' },
+    zh: { flag: '🇨🇳', code: '中文', label: '中文' },
+  };
+  const LANGS = Object.keys(LANG_INFO);
   const IMG = (f) => 'img/dishes/' + f + '.jpg';
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const price = (p) => p + '<small>k</small>';
@@ -273,7 +296,9 @@
   function render() {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
     document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = UI[el.dataset.t][lang]; });
-    document.querySelectorAll('.langs button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+    $('#langFlag').textContent = LANG_INFO[lang].flag;
+    $('#langCode').textContent = LANG_INFO[lang].code;
+    $('#langSel').value = lang;
 
     // Popular strip — all dishes with photos
     $('#strip').innerHTML = all.filter((it) => it.img).map((it) => {
@@ -323,7 +348,7 @@
       entries.forEach((e) => visible.set(e.target.id, e.isIntersecting ? e.boundingClientRect.top : null));
       const top = [...document.querySelectorAll('.cat')].find((s) => visible.get(s.id) != null);
       if (top) setActive(top.id.slice(2));
-    }, { rootMargin: '-120px 0px -55% 0px' });
+    }, { rootMargin: '-70px 0px -55% 0px' });
     document.querySelectorAll('.cat').forEach((s) => io.observe(s));
   }
   let activeId = null;
@@ -373,10 +398,11 @@
   hscroll($('#strip'));
 
   // Language switch
-  document.querySelector('.langs').addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-lang]');
-    if (!b || b.dataset.lang === lang) return;
-    lang = b.dataset.lang;
+  const sel = $('#langSel');
+  sel.innerHTML = LANGS.map((l) => `<option value="${l}">${LANG_INFO[l].flag} ${LANG_INFO[l].label}</option>`).join('');
+  sel.addEventListener('change', () => {
+    if (sel.value === lang) return;
+    lang = sel.value;
     try { localStorage.setItem('menu-lang', lang); } catch (err) {}
     const u = new URL(location.href); u.searchParams.set('lang', lang);
     history.replaceState(null, '', u);
