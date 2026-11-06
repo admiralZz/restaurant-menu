@@ -130,7 +130,10 @@
   .note { color: var(--muted); font-size: 13px; margin: 14px 0 0; text-align: center; }
 
   .popular h2, .group-title { font: 400 26px/1.2 var(--script); color: var(--brand); margin: 22px 0 10px; }
-  :lang(zh) .popular h2, :lang(zh) .group-title, :lang(zh) .cat h3 { font-family: var(--sans); font-weight: 800; }
+  :lang(zh) .popular h2, :lang(zh) .group-title, :lang(zh) .cat h3,
+  :lang(ja) .popular h2, :lang(ja) .group-title, :lang(ja) .cat h3 { font-family: var(--sans); font-weight: 800; }
+  /* Japanese glyph forms for kanji: Japanese fonts must come before the Chinese ones */
+  :lang(ja) { --sans: 'Nunito', system-ui, -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', Meiryo, sans-serif; }
   .strip {
     display: flex; gap: 12px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 8px;
     scroll-snap-type: x mandatory; scrollbar-width: none; scroll-padding-inline: 16px;
@@ -176,7 +179,7 @@
   /* ---------- Footer ---------- */
   footer { background: var(--surface); border-top: 1px solid var(--line); padding: 22px 16px calc(28px + env(safe-area-inset-bottom)); margin-top: 28px; }
   footer h4 { font: 400 22px/1.2 var(--script); color: var(--brand); margin: 0 0 10px; }
-  :lang(zh) footer h4 { font-family: var(--sans); font-weight: 800; }
+  :lang(zh) footer h4, :lang(ja) footer h4 { font-family: var(--sans); font-weight: 800; }
   footer p { margin: 6px 0; color: var(--muted); font-size: 14px; }
   .wa {
     display: inline-flex; align-items: center; gap: 8px; margin-top: 8px;
@@ -214,7 +217,7 @@
     <label class="lang">
       <span class="flag" id="langFlag"></span><span id="langCode"></span>
       <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <select id="langSel" aria-label="Language / Bahasa / Язык / 语言"></select>
+      <select id="langSel" aria-label="Language / Bahasa / Язык / 语言 / 言語"></select>
     </label>
   </div>
 </header>
@@ -252,14 +255,14 @@
 <script>
 (function () {
   const UI = {
-    tagline:   { id: 'Jimbaran, Bali', en: 'Jimbaran, Bali', ru: 'Джимбаран, Бали', zh: '巴厘岛 · 金巴兰' },
-    priceNote: { id: 'Harga dalam ribu Rupiah: 25k = Rp 25.000', en: 'Prices in thousands of Rupiah: 25k = Rp 25,000', ru: 'Цены в тысячах рупий: 25k = 25 000 Rp', zh: '价格单位：千印尼盾，25k = 25,000 印尼盾' },
-    popular:   { id: 'Menu Populer', en: 'Popular', ru: 'Популярное', zh: '人气菜品' },
-    food:      { id: 'Makanan', en: 'Food', ru: 'Еда', zh: '餐食' },
-    drink:     { id: 'Minuman', en: 'Drinks', ru: 'Напитки', zh: '饮品' },
-    best:      { id: 'Best Seller', en: 'Best Seller', ru: 'Хит', zh: '招牌' },
-    fav:       { id: 'Favorit', en: 'Favorite', ru: 'Выбор гостей', zh: '人气' },
-    contacts:  { id: 'Kontak', en: 'Contacts', ru: 'Контакты', zh: '联系方式' },
+    tagline:   { id: 'Jimbaran, Bali', en: 'Jimbaran, Bali', ru: 'Джимбаран, Бали', zh: '巴厘岛 · 金巴兰', ja: 'バリ島・ジンバラン' },
+    priceNote: { id: 'Harga dalam ribu Rupiah: 25k = Rp 25.000', en: 'Prices in thousands of Rupiah: 25k = Rp 25,000', ru: 'Цены в тысячах рупий: 25k = 25 000 Rp', zh: '价格单位：千印尼盾，25k = 25,000 印尼盾', ja: '価格は千ルピア単位：25k = 25,000ルピア' },
+    popular:   { id: 'Menu Populer', en: 'Popular', ru: 'Популярное', zh: '人气菜品', ja: '人気メニュー' },
+    food:      { id: 'Makanan', en: 'Food', ru: 'Еда', zh: '餐食', ja: 'フード' },
+    drink:     { id: 'Minuman', en: 'Drinks', ru: 'Напитки', zh: '饮品', ja: 'ドリンク' },
+    best:      { id: 'Best Seller', en: 'Best Seller', ru: 'Хит', zh: '招牌', ja: '一番人気' },
+    fav:       { id: 'Favorit', en: 'Favorite', ru: 'Выбор гостей', zh: '人气', ja: 'おすすめ' },
+    contacts:  { id: 'Kontak', en: 'Contacts', ru: 'Контакты', zh: '联系方式', ja: '連絡先' },
   };
   // Порядок = порядок в выпадающем списке. Новый язык: добавить сюда + поле в menu.js и UI.
   const LANG_INFO = {
@@ -267,6 +270,7 @@
     en: { flag: '🇬🇧', code: 'EN', label: 'English' },
     ru: { flag: '🇷🇺', code: 'RU', label: 'Русский' },
     zh: { flag: '🇨🇳', code: '中文', label: '中文' },
+    ja: { flag: '🇯🇵', code: '日本語', label: '日本語' },
   };
   const LANGS = Object.keys(LANG_INFO);
   const IMG = (f) => 'img/dishes/' + f + '.jpg';
